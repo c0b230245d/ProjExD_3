@@ -136,7 +136,7 @@ class Beam:
 
 class Explosion:
     img = pg.image.load("fig/explosion.gif")
-    def __init__(self, bomb):
+    def __init__(self, bomb: Bomb):
         self.img = __class__.img
         self.imgs = [
             self.img,  # 元の爆発画像Surface
