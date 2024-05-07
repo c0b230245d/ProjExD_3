@@ -133,6 +133,28 @@ class Beam:
             self.rct.move_ip(self.vx, self.vy)
             screen.blit(self.img, self.rct)
 
+
+class Explosion:
+    img = pg.image.load("fig/explosion.gif")
+    def __init__(self, bomb):
+        self.img = __class__.img
+        self.imgs = [
+            self.img,  # 元の爆発画像Surface
+            pg.transform.flip(self.img, True, True)  # 上下左右flipした爆発画像Surface
+        ]
+        self.rct = self.img.get_rect()  # 爆発画像Rect
+        self.rct.center = bomb.rct.center  # 爆発画像の座標
+        self.life = 16  # 爆発時間
+
+    def update(self, screen):
+        self.life -= 1
+        if self.life > 0:
+            if self.life % 4 in [0,1]:  # lifeが２減るごとに画像を切替える
+                screen.blit(self.imgs[0],self.rct)
+            else:
+                screen.blit(self.imgs[1],self.rct)
+
+
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -140,6 +162,7 @@ def main():
     bird = Bird((900, 400))
     bomb = Bomb((255, 0, 0), 10)
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
+    explosions = []
     beam = None
     clock = pg.time.Clock()
     tmr = 0
@@ -165,11 +188,13 @@ def main():
         for i, bomb in enumerate(bombs):
             if beam is not None:
                 if beam.rct.colliderect(bomb.rct): #  ビームと爆弾が衝突したら 
+                    explosions.append(Explosion(bomb))
                     beam = None
                     bombs[i] = None
                     bird.change_img(6, screen)
                     pg.display.update()
         bombs = [bomb for bomb in bombs if bomb is not None]
+        explosions = [i for i in explosions if i.life > 0]
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
@@ -177,6 +202,8 @@ def main():
             bomb.update(screen)
         if beam is not None:
             beam.update(screen)
+        for explosion in explosions:
+            explosion.update(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
